@@ -1,0 +1,337 @@
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+}
+
+.app-header {
+  padding: 2rem 0 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.app-header h1 {
+  margin: 0 0 0.4rem;
+  font-size: 1.75rem;
+  color: #0f172a;
+}
+
+.app-subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.app-footer {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ─── Sections ───────────────────────────────────────────────────────────── */
+
+.analysis-section {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.analysis-section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  color: #0f172a;
+}
+
+.section-description {
+  margin: 0 0 1.25rem;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.section-description.muted {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ─── DataTable ──────────────────────────────────────────────────────────── */
+
+.data-table {
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  width: auto;
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.35rem 0.75rem;
+  text-align: right;
+  min-width: 120px;
+}
+
+.data-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #334155;
+}
+
+.data-table .unit {
+  font-weight: 400;
+  color: #64748b;
+}
+
+.data-table td.row-num,
+.data-table th.row-num {
+  min-width: 2rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.data-table td[contenteditable]:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+  background: #eff6ff;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+.analyze-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.analyze-btn:hover {
+  background: #1d4ed8;
+}
+
+.copy-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.copy-btn:hover {
+  background: #e2e8f0;
+}
+
+/* ─── Results ────────────────────────────────────────────────────────────── */
+
+.result {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.result h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+/* ─── MetricsBadge ───────────────────────────────────────────────────────── */
+
+.metrics-badge {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metric-value {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.quality-tag {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.quality-excellent { color: #166534; background: #dcfce7; }
+.quality-good { color: #065f46; background: #d1fae5; }
+.quality-acceptable { color: #92400e; background: #fef3c7; }
+.quality-poor { color: #991b1b; background: #fee2e2; }
+
+.status-ok { color: #166534; background: #dcfce7; }
+.status-warn { color: #92400e; background: #fef3c7; }
+.status-bad { color: #991b1b; background: #fee2e2; }
+
+/* ─── Charts ─────────────────────────────────────────────────────────────── */
+
+.chart-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 700px) {
+  .chart-pair { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.chart-card h4 {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+/* ─── Transformation table ───────────────────────────────────────────────── */
+
+.transformation-info {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.transformation-table {
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.transformation-table summary {
+  cursor: pointer;
+  color: #3b82f6;
+}
+
+.comparison-table {
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+  border: 1px solid #e2e8f0;
+  padding: 0.25rem 0.75rem;
+}
+
+.comparison-table th {
+  background: #f1f5f9;
+}
+
+.best-row {
+  font-weight: 600;
+  background: #f0fdf4;
+}
+
+/* ─── EV stats ───────────────────────────────────────────────────────────── */
+
+.ev-stats {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.ev-distribution {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.dist-good { color: #166534; }
+.dist-ok   { color: #92400e; }
+.dist-bad  { color: #991b1b; }
+
+/* ─── Adjustment result ──────────────────────────────────────────────────── */
+
+.adjustment-result {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.adjustment-result p {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+}
+
+.adjustment-detail {
+  color: #475569;
+  font-size: 0.85rem !important;
+}
+
+/* ─── Report ─────────────────────────────────────────────────────────────── */
+
+.report-summary {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.report-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-symbol {
+  font-size: 1rem;
+}
+
+.report-text-wrapper {
+  position: relative;
+}
+
+.report-text {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+}
