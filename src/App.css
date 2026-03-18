@@ -288,3 +288,28 @@
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
 }
+
+.adj-recommendation {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.adj-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  white-space: nowrap;
+}
+
+.adj-detail {
+  font-size: 0.875rem;
+  color: #1e40af;
+  line-height: 1.4;
+}

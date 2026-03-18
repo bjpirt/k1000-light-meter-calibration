@@ -63,6 +63,47 @@ export function simulateEVSeries(
   return points
 }
 
+export interface AdjResistorResult {
+  resistorValue: number  // Ω
+  connectToCoil: 1 | 2
+}
+
+/**
+ * Find a resistor value that, when wired in parallel with one coil's external
+ * circuit, shifts the mean current difference to zero.
+ *
+ * R_adj = V / |ΔI_avg|  (adds a constant extra current V/R_adj to that coil)
+ *
+ * If avg ΔI > 0 (coil 1 draws more), connect to coil 2 to boost I_coil2.
+ * If avg ΔI < 0 (coil 2 draws more), connect to coil 1 to boost I_coil1.
+ */
+export function findAdjustmentResistor(
+  series: EVSeriesPoint[],
+  voltage = 1.5,
+): AdjResistorResult {
+  const avgDeltaImA = series.reduce((s, p) => s + p.deltaImA, 0) / series.length
+  const connectToCoil = avgDeltaImA >= 0 ? 2 : 1
+  const resistorValue = (voltage * 1000) / Math.abs(avgDeltaImA)
+  return { resistorValue, connectToCoil }
+}
+
+/**
+ * Re-run the series with the adjustment resistor applied in parallel with
+ * the relevant coil's external circuit.
+ */
+export function applyAdjustmentResistor(
+  series: EVSeriesPoint[],
+  adj: AdjResistorResult,
+  voltage = 1.5,
+): EVSeriesPoint[] {
+  const extraCurrentMA = (voltage / adj.resistorValue) * 1000
+  return series.map(pt => {
+    const iCoil1mA = adj.connectToCoil === 1 ? pt.iCoil1mA + extraCurrentMA : pt.iCoil1mA
+    const iCoil2mA = adj.connectToCoil === 2 ? pt.iCoil2mA + extraCurrentMA : pt.iCoil2mA
+    return { ...pt, iCoil1mA, iCoil2mA, deltaImA: iCoil1mA - iCoil2mA }
+  })
+}
+
 export interface SimulationPoint {
   fStop: number
   shutterSpeed: number

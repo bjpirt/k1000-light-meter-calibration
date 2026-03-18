@@ -127,17 +127,17 @@ function BatteryH({ x1, x2, y }: { x1: number; x2: number; y: number }) {
   )
 }
 
-export function CircuitDiagram() {
+export function CircuitDiagram({ adjCoil }: { adjCoil?: 1 | 2 } = {}) {
   const W = 820
-  const H = 455
+  const H = 510
 
   // Galvanometer box — RIGHT side
-  const gx = 648, gy = 82, gw = 118, gh = 270
+  const gx = 648, gy = 82, gw = 118, gh = 330
   const gLeft = gx              // left edge where coil terminals are
 
   // Coil terminal y positions (absolute in SVG)
   const coil1Y = 162
-  const coil2Y = 297
+  const coil2Y = 360
 
   // Left rail x (circuit positive side)
   const leftX = 90
@@ -145,18 +145,18 @@ export function CircuitDiagram() {
   // Top branch (Coil 1, y = coil1Y)
   const topSplitX = 185
   const topRejoinX = 490
-  const topUpperY = coil1Y - 48   // ~114
-  const topLowerY = coil1Y + 48   // ~210
+  const topUpperY = coil1Y - 48   // 114
+  const topLowerY = coil1Y + 48   // 210
   const trimR2X = 560             // Trim R₂ is after the parallel CdS section
 
   // Bottom branch (Coil 2, y = coil2Y)
   const botSplitX = 200
   const botRejoinX = 580
-  const botUpperY = coil2Y - 44   // ~253
-  const botLowerY = coil2Y + 44   // ~341
+  const botUpperY = coil2Y - 44   // 316
+  const botLowerY = coil2Y + 44   // 404
 
   // Battery at bottom
-  const batY = 418
+  const batY = 472
 
   return (
     <svg
@@ -257,6 +257,26 @@ export function CircuitDiagram() {
 
       {/* ── Battery at bottom — + on left (circuit), − on right (galvo) ── */}
       <BatteryH x1={leftX} x2={gx + gw + 14} y={batY} />
+
+      {/* ── Adjustment resistor in the gap (optional) ── */}
+      {adjCoil && (() => {
+        const midGapY = Math.round((topLowerY + botUpperY) / 2)  // ~263
+        const resX = Math.round((leftX + gLeft) / 2)             // ~369
+        const targetY = adjCoil === 1 ? coil1Y : coil2Y
+        const joinX = gLeft - 22  // new junction on the circuit wire, short of the galvo
+        return (
+          <>
+            {/* Branch off the left rail at gap midpoint */}
+            <JunctionDot x={leftX} y={midGapY} />
+            <Wire x1={leftX} y1={midGapY} x2={resX - 34} y2={midGapY} />
+            <Resistor cx={resX} cy={midGapY} label="R adj" />
+            {/* Wire right to junction, then up/down to meet the circuit wire */}
+            <Wire x1={resX + 34} y1={midGapY} x2={joinX} y2={midGapY} />
+            <Wire x1={joinX} y1={midGapY} x2={joinX} y2={targetY} />
+            <JunctionDot x={joinX} y={targetY} />
+          </>
+        )
+      })()}
 
       {/* ── Balance annotation ── */}
       <text x={W / 2} y={H - 6} textAnchor="middle" fontSize={10} fill="#64748b">
