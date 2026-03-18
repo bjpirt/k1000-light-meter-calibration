@@ -7,14 +7,17 @@ import { LinearityChart } from './LinearityChart'
 import { MetricsBadge } from './MetricsBadge'
 
 const DEFAULT_ROWS: LightMeterRow[] = [
-  { evLevel: 6, resistance: null },
-  { evLevel: 8, resistance: null },
-  { evLevel: 10, resistance: null },
-  { evLevel: 12, resistance: null },
-  { evLevel: 14, resistance: null },
   { evLevel: 16, resistance: null },
-  { evLevel: 18, resistance: null },
-  { evLevel: 20, resistance: null },
+  { evLevel: 15, resistance: null },
+  { evLevel: 14, resistance: null },
+  { evLevel: 13, resistance: null },
+  { evLevel: 12, resistance: null },
+  { evLevel: 11, resistance: null },
+  { evLevel: 10, resistance: null },
+  { evLevel: 9, resistance: null },
+  { evLevel: 8, resistance: null },
+  { evLevel: 7, resistance: null },
+  { evLevel: 6, resistance: null },
 ]
 
 const COLUMNS = [
