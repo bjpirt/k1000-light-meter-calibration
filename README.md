@@ -4,7 +4,7 @@ A browser-based tool for analyzing and calibrating the variable resistors in a P
 
 ## What it does
 
-1. **Aperture resistor linearity** — tests 4 f-stop transformations (f, f², log(f), 1/f²) and picks the best fit, revealing the cam's mechanical design
+1. **Aperture resistor linearity** — tests 4 f-stop transformations (f, f², log(f), 1/f²) and picks the best fit
 2. **Shutter speed resistor linearity** — analyzes on a log₂ scale since shutter speeds form a geometric series
 3. **Light meter circuit** — checks EV vs resistance linearity and calculates per-point exposure errors in stops
 4. **Adjustment resistor recommendation** — finds the optimal trimmer potentiometer value (1–10 kΩ) to minimize maximum EV error

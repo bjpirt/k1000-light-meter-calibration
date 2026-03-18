@@ -1,9 +1,10 @@
 import { useState } from 'react'
+import { analyzeShutterResistor } from '../lib/analysis'
+import type { ShutterRow, ShutterResult } from '../lib/types'
+import { useLocalStorage } from '../lib/useLocalStorage'
 import { DataTable } from './DataTable'
 import { LinearityChart } from './LinearityChart'
 import { MetricsBadge } from './MetricsBadge'
-import { analyzeShutterResistor } from '../lib/analysis'
-import type { ShutterRow, ShutterResult } from '../lib/types'
 
 const DEFAULT_ROWS: ShutterRow[] = [
   { shutterSpeed: 1, resistance: null },
@@ -24,19 +25,9 @@ const COLUMNS = [
   { key: 'resistance', label: 'Resistance', unit: 'Ω' },
 ]
 
-interface Props {
-  onResult: (result: ShutterResult | null) => void
-}
-
-export function ShutterSection({ onResult }: Props) {
-  const [rows, setRows] = useState<ShutterRow[]>(DEFAULT_ROWS)
+export function ShutterSection() {
+  const [rows, setRows] = useLocalStorage<ShutterRow[]>('k1000:shutter', DEFAULT_ROWS)
   const [result, setResult] = useState<ShutterResult | null>(null)
-
-  function handleAnalyze() {
-    const r = analyzeShutterResistor(rows)
-    setResult(r)
-    onResult(r)
-  }
 
   return (
     <section className="analysis-section">
@@ -48,7 +39,7 @@ export function ShutterSection({ onResult }: Props) {
 
       <DataTable columns={COLUMNS} rows={rows} onChange={setRows} />
 
-      <button className="analyze-btn" onClick={handleAnalyze}>
+      <button className="analyze-btn" onClick={() => setResult(analyzeShutterResistor(rows))}>
         Analyze Shutter Resistor
       </button>
 

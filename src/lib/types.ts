@@ -11,9 +11,7 @@ export interface LinearityResult {
 }
 
 export interface ApertureResult extends LinearityResult {
-  transformation: string
-  allTransformations: Record<string, LinearityResult>
-  xValues: number[]
+  xValues: number[] // log(f-stop)
   rawFStops: number[]
   resistances: number[]
 }

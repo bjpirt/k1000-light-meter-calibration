@@ -85,8 +85,7 @@ describe('analyzeApertureResistor', () => {
   it('returns a result for valid data', () => {
     const r = analyzeApertureResistor(apertureRows)
     expect(r).not.toBeNull()
-    expect(r!.transformation).toBeTruthy()
-    expect(['f-stop', 'f²', 'log(f-stop)', '1/f²']).toContain(r!.transformation)
+    expect(r!.rSquared).toBeGreaterThan(0)
   })
 
   it('returns null for fewer than 2 valid rows', () => {
@@ -106,20 +105,20 @@ describe('analyzeApertureResistor', () => {
     expect(r!.resistances).toHaveLength(2)
   })
 
-  it('picks the transformation with the highest R²', () => {
-    // Data that follows 1/f² relationship
+  it('achieves R² ≈ 1 for data that is perfectly linear in log(f-stop)', () => {
     const rows = [1.4, 2.0, 2.8, 4.0, 5.6].map(f => ({
       fStop: f,
-      resistance: 10000 / (f * f),
+      resistance: Math.log(f) * 1000 + 500,
     }))
     const r = analyzeApertureResistor(rows)
-    expect(r!.transformation).toBe('1/f²')
     expect(r!.rSquared).toBeCloseTo(1)
   })
 
-  it('includes allTransformations with 4 entries', () => {
-    const r = analyzeApertureResistor(apertureRows)
-    expect(Object.keys(r!.allTransformations)).toHaveLength(4)
+  it('exposes xValues as log(f-stop)', () => {
+    const rows = [{ fStop: 1.0, resistance: 100 }, { fStop: Math.E, resistance: 200 }]
+    const r = analyzeApertureResistor(rows)!
+    expect(r.xValues[0]).toBeCloseTo(0)    // log(1) = 0
+    expect(r.xValues[1]).toBeCloseTo(1)    // log(e) = 1
   })
 })
 

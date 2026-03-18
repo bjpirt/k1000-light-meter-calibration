@@ -83,8 +83,9 @@ function filterValid(
 }
 
 /**
- * Analyze aperture variable resistor linearity.
- * Tests 4 f-stop transformations and returns the best-fit result.
+ * Analyze aperture variable resistor linearity using log(f-stop) as the x-axis.
+ * The f-stop scale is logarithmic, so this transformation produces the most
+ * physically meaningful linear fit.
  */
 export function analyzeApertureResistor(rows: ApertureRow[]): ApertureResult | null {
   const rawFStops = rows.map(r => r.fStop)
@@ -93,30 +94,10 @@ export function analyzeApertureResistor(rows: ApertureRow[]): ApertureResult | n
 
   if (fStops.length < 2) return null
 
-  const transformations: Record<string, number[]> = {
-    'f-stop': fStops,
-    'f²': fStops.map(f => f * f),
-    'log(f-stop)': fStops.map(f => Math.log(f)),
-    '1/f²': fStops.map(f => 1 / (f * f)),
-  }
+  const xValues = fStops.map(f => Math.log(f))
+  const result = linearRegression(xValues, resistances)
 
-  const allTransformations: Record<string, LinearityResult> = {}
-  for (const [name, xVals] of Object.entries(transformations)) {
-    allTransformations[name] = linearRegression(xVals, resistances)
-  }
-
-  const bestName = Object.keys(allTransformations).reduce((best, name) =>
-    allTransformations[name].rSquared > allTransformations[best].rSquared ? name : best,
-  )
-
-  return {
-    ...allTransformations[bestName],
-    transformation: bestName,
-    allTransformations,
-    xValues: transformations[bestName],
-    rawFStops: fStops,
-    resistances,
-  }
+  return { ...result, xValues, rawFStops: fStops, resistances }
 }
 
 /**
