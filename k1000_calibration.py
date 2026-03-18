@@ -258,6 +258,284 @@ def find_optimal_adjustment_resistor(measured_resistances, ev_levels,
     return optimal_r, final_error, "success"
 
 
+def analyze_aperture_resistor(aperture_grid):
+    """
+    Analyze aperture variable resistor linearity using optimal transformation
+
+    Tests multiple f-stop transformations to find the most linear relationship:
+    - f-stop (linear): direct f-number
+    - f²: aperture area (light transmission ~ 1/f²)
+    - log(f-stop): logarithmic scale
+    - 1/f²: inverse aperture area
+
+    Parameters:
+    -----------
+    aperture_grid : DataGrid
+        Interactive datagrid with F-Stop and Resistance columns
+
+    Returns:
+    --------
+    dict
+        Analysis results from analyze_linearity() with best transformation
+    """
+    aperture_df = aperture_grid.data
+    f_stops = np.array(aperture_df['F-Stop'])
+    resistances = np.array(aperture_df['Resistance (Ω)'])
+
+    # Skip analysis if no data
+    if any(np.isnan(resistances)):
+        print("=== APERTURE RESISTOR LINEARITY ANALYSIS ===")
+        print("No data plotted - please enter resistance measurements first.")
+        # Return a minimal analysis for upstream use
+        return {
+            'slope': 0, 'intercept': 0, 'r_squared': 0,
+            'rms_error': 0, 'max_deviation': 0, 'linearity_percent': 0,
+            'std_err': 0, 'residuals': np.array([]), 'fit': np.array([]),
+            'transformation': 'f-stop'
+        }
+
+    # Test different transformations
+    transformations = {
+        'f-stop': f_stops,
+        'f²': f_stops ** 2,
+        'log(f-stop)': np.log(f_stops),
+        '1/f²': 1 / (f_stops ** 2)
+    }
+
+    results = {}
+    for name, x_values in transformations.items():
+        analysis = analyze_linearity(x_values, resistances, label=f"Aperture ({name})")
+        results[name] = analysis
+
+    # Find best transformation (highest R²)
+    best_name = max(results.keys(), key=lambda k: results[k]['r_squared'])
+    aperture_analysis = results[best_name]
+    aperture_analysis['transformation'] = best_name
+
+    print("=== APERTURE RESISTOR LINEARITY ANALYSIS ===")
+    print(f"Transformation tested: f-stop, f², log(f-stop), 1/f²")
+    print(f"Best fit: {best_name}\n")
+    print(f"R² Value: {aperture_analysis['r_squared']:.4f} (1.0 = perfect linearity)")
+    print(f"RMS Error: {aperture_analysis['rms_error']:.2f} Ω")
+    print(f"Maximum Deviation: {aperture_analysis['max_deviation']:.2f} Ω")
+    print(f"Linearity: {aperture_analysis['linearity_percent']:.2f}%")
+    print(f"Slope: {aperture_analysis['slope']:.4f} Ω/{best_name}")
+
+    # Print comparison of all transformations
+    print("\nComparison of all transformations:")
+    for name in sorted(results.keys(), key=lambda k: results[k]['r_squared'], reverse=True):
+        print(f"  {name:15s}: R² = {results[name]['r_squared']:.4f}")
+
+    # Plot best transformation
+    x_values = transformations[best_name]
+    plot_linearity(
+        x_values,
+        resistances,
+        aperture_analysis,
+        f"Aperture Variable Resistor ({best_name})"
+    )
+
+    return aperture_analysis
+
+
+def analyze_shutter_resistor(shutter_grid):
+    """
+    Analyze shutter speed variable resistor linearity
+
+    Parameters:
+    -----------
+    shutter_grid : DataGrid
+        Interactive datagrid with Shutter Speed and Resistance columns
+
+    Returns:
+    --------
+    dict
+        Analysis results from analyze_linearity()
+    """
+    shutter_df = shutter_grid.data
+    shutter_log = np.log2(np.array(shutter_df['Shutter Speed (1/s)']))
+
+    shutter_analysis = analyze_linearity(
+        shutter_log,
+        np.array(shutter_df['Resistance (Ω)'])
+    )
+
+    print("=== SHUTTER SPEED RESISTOR LINEARITY ANALYSIS ===")
+    print(f"R² Value: {shutter_analysis['r_squared']:.4f} (1.0 = perfect linearity)")
+    print(f"RMS Error: {shutter_analysis['rms_error']:.2f} Ω")
+    print(f"Maximum Deviation: {shutter_analysis['max_deviation']:.2f} Ω")
+    print(f"Linearity: {shutter_analysis['linearity_percent']:.2f}%")
+    print(f"Slope: {shutter_analysis['slope']:.4f} Ω/LOG₂(speed)")
+
+    # Plot if data available
+    if not any(np.isnan(np.array(shutter_df['Resistance (Ω)']))):
+        plot_linearity(
+            shutter_log,
+            np.array(shutter_df['Resistance (Ω)']),
+            shutter_analysis,
+            "Shutter Speed Variable Resistor (log scale)"
+        )
+    else:
+        print("\nNo data plotted - please enter resistance measurements first.")
+
+    return shutter_analysis
+
+
+def analyze_light_meter_circuit(lightem_grid):
+    """
+    Analyze light meter circuit resistance linearity
+
+    Parameters:
+    -----------
+    lightem_grid : DataGrid
+        Interactive datagrid with EV Level and Circuit Resistance columns
+
+    Returns:
+    --------
+    dict
+        Analysis results from analyze_linearity()
+    """
+    lightem_df = lightem_grid.data
+    lm_analysis = analyze_linearity(
+        np.array(lightem_df['EV Level']),
+        np.array(lightem_df['Circuit Resistance (Ω)'])
+    )
+
+    print("=== LIGHT METER CIRCUIT LINEARITY ANALYSIS ===")
+    print(f"R² Value: {lm_analysis['r_squared']:.4f} (1.0 = perfect linearity)")
+    print(f"RMS Error: {lm_analysis['rms_error']:.2f} Ω")
+    print(f"Maximum Deviation: {lm_analysis['max_deviation']:.2f} Ω")
+    print(f"Linearity: {lm_analysis['linearity_percent']:.2f}%")
+    print(f"Slope: {lm_analysis['slope']:.4f} Ω/EV")
+
+    # Plot if data available
+    if not any(np.isnan(np.array(lightem_df['Circuit Resistance (Ω)']))):
+        plot_linearity(
+            np.array(lightem_df['EV Level']),
+            np.array(lightem_df['Circuit Resistance (Ω)']),
+            lm_analysis,
+            "Light Meter Circuit Resistance"
+        )
+    else:
+        print("\nNo data plotted - please enter resistance measurements first.")
+
+    return lm_analysis
+
+
+def calculate_ev_errors(lightem_df, lm_analysis):
+    """
+    Calculate and visualize EV errors across the measurement range
+
+    Parameters:
+    -----------
+    lightem_df : pd.DataFrame
+        Light meter data with EV levels and circuit resistances
+    lm_analysis : dict
+        Analysis results from analyze_light_meter_circuit()
+
+    Returns:
+    --------
+    np.ndarray or None
+        EV error values at each measurement point, or None if no data
+    """
+    if any(np.isnan(np.array(lightem_df['Circuit Resistance (Ω)']))):
+        print("No light meter data entered yet. Please fill in measurements to see EV error analysis.")
+        return None
+
+    # Calculate EV errors from measured vs ideal linear relationship
+    measured_r = np.array(lightem_df['Circuit Resistance (Ω)'])
+    ev_levels = np.array(lightem_df['EV Level'])
+
+    # Expected resistance following perfect linear relationship
+    expected_r = lm_analysis['slope'] * ev_levels + lm_analysis['intercept']
+
+    # Calculate EV error for each measurement
+    ev_errors = []
+    for meas, exp in zip(measured_r, expected_r):
+        if exp > 0 and meas > 0:
+            ev_error = np.log2(meas / exp)
+        else:
+            ev_error = 0
+        ev_errors.append(ev_error)
+
+    ev_errors = np.array(ev_errors)
+
+    # Create visualization
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4))
+
+    # Plot 1: Measured vs Expected Resistance
+    ax1.scatter(ev_levels, measured_r, label='Measured', s=80, alpha=0.7, color='blue')
+    ax1.plot(ev_levels, expected_r, 'r--', label='Linear Fit', linewidth=2)
+    ax1.set_xlabel('EV Level')
+    ax1.set_ylabel('Resistance (Ω)')
+    ax1.set_title('Light Meter Circuit: Measured vs Expected Resistance')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    # Plot 2: EV Error
+    colors = ['red' if e > 0.1 else 'orange' if e > 0.05 else 'green' for e in np.abs(ev_errors)]
+    ax2.bar(ev_levels, ev_errors, color=colors, alpha=0.7, edgecolor='black')
+    ax2.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
+    ax2.axhline(y=0.1, color='red', linestyle='--', linewidth=1, alpha=0.5, label='±0.1 EV threshold')
+    ax2.set_xlabel('EV Level')
+    ax2.set_ylabel('EV Error (stops)')
+    ax2.set_title('Exposure Error Across EV Range')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3, axis='y')
+
+    plt.tight_layout()
+    plt.show()
+
+    # Print error statistics
+    print("\n=== EV ERROR ANALYSIS ===")
+    print(f"Maximum EV Error: {np.max(np.abs(ev_errors)):.3f} stops")
+    print(f"RMS EV Error: {np.sqrt(np.mean(ev_errors**2)):.3f} stops")
+    print(f"Mean Signed Error: {np.mean(ev_errors):.3f} stops")
+    print(f"\nError Distribution:")
+    print(f"  Within ±0.05 EV: {np.sum(np.abs(ev_errors) <= 0.05)} points")
+    print(f"  Within ±0.1 EV:  {np.sum(np.abs(ev_errors) <= 0.1)} points")
+    print(f"  > ±0.1 EV:       {np.sum(np.abs(ev_errors) > 0.1)} points")
+
+    return ev_errors
+
+
+def recommend_adjustment_resistor(lightem_df):
+    """
+    Calculate optimal adjustment resistor value
+
+    Parameters:
+    -----------
+    lightem_df : pd.DataFrame
+        Light meter data with EV levels and circuit resistances
+
+    Returns:
+    --------
+    float or None
+        Optimal resistance value in Ω, or None if insufficient data
+    """
+    if any(np.isnan(np.array(lightem_df['Circuit Resistance (Ω)']))):
+        print("Please enter light meter circuit resistance measurements first.")
+        return None
+
+    measured_r = np.array(lightem_df['Circuit Resistance (Ω)'], dtype=float)
+    ev_vals = np.array(lightem_df['EV Level'], dtype=float)
+
+    optimal_r, max_error, status = find_optimal_adjustment_resistor(measured_r, ev_vals)
+
+    print("=== ADJUSTMENT RESISTOR RECOMMENDATION ===")
+    if status == "success":
+        print(f"Optimal adjustment resistor: {optimal_r:.1f} Ω")
+        print(f"Maximum EV error with adjustment: {max_error:.3f} stops")
+        print(f"\nConfiguration suggestions:")
+        print(f"  - Use {optimal_r:.0f} Ω trimmer potentiometer (closest standard value)")
+        print(f"  - Connect in parallel with main circuit for fine adjustment")
+        print(f"  - Expected accuracy: ±{max_error*2:.2f} EV (±{max_error*2*100:.1f}% exposure error)")
+        return optimal_r
+    else:
+        print("Cannot calculate recommendation - insufficient data")
+        return None
+
+
 def generate_calibration_report(aperture_analysis, shutter_analysis, lm_analysis,
                                 lightem_df, ev_errors=None, optimal_r=None):
     """
