@@ -1,5 +1,68 @@
 import type { ApertureResult, ShutterResult, LightMeterResult } from './types'
 
+export interface EVSeriesPoint {
+  ev: number
+  shutterSpeedDenom: number  // e.g. 1024 for 1/1024 s, 0.5 for 2 s
+  rLightMeter: number        // Ω — coil 1 circuit
+  rAperture: number          // Ω
+  rShutter: number           // Ω
+  rParallel: number          // Ω — coil 2 circuit
+  iCoil1mA: number           // mA
+  iCoil2mA: number           // mA
+  deltaImA: number           // iCoil1 − iCoil2 (positive = coil 1 has more current)
+}
+
+/**
+ * Simulate coil currents for EV 16 down to EV 1, at a fixed f-stop (default f/8).
+ * For each EV the "correct" shutter speed is derived from EV = log2(f² × s).
+ * Both coil currents are calculated using the supplied voltage (default 1.5 V).
+ */
+export function simulateEVSeries(
+  apertureResult: ApertureResult,
+  shutterResult: ShutterResult,
+  lmResult: LightMeterResult,
+  fStop = 8,
+  voltage = 1.5,
+  maxEV = 16,
+  minEV = 6,
+): EVSeriesPoint[] {
+  const rAperture =
+    apertureResult.slope * Math.log(fStop) + apertureResult.intercept
+
+  const points: EVSeriesPoint[] = []
+  for (let ev = maxEV; ev >= minEV; ev--) {
+    const exactDenom = Math.pow(2, ev) / (fStop * fStop)
+
+    // Snap to nearest standard shutter speed from the measured table (log₂ space)
+    const shutterSpeedDenom = shutterResult.shutterSpeeds.reduce((best, s) =>
+      Math.abs(Math.log2(s) - Math.log2(exactDenom)) <
+      Math.abs(Math.log2(best) - Math.log2(exactDenom))
+        ? s : best,
+    )
+
+    const rLightMeter = lmResult.slope * ev + lmResult.intercept
+    const rShutter =
+      shutterResult.slope * Math.log2(shutterSpeedDenom) + shutterResult.intercept
+    const rParallel = (rAperture * rShutter) / (rAperture + rShutter)
+
+    const iCoil1mA = (voltage / rLightMeter) * 1000
+    const iCoil2mA = (voltage / rParallel) * 1000
+
+    points.push({
+      ev,
+      shutterSpeedDenom,
+      rLightMeter,
+      rAperture,
+      rShutter,
+      rParallel,
+      iCoil1mA,
+      iCoil2mA,
+      deltaImA: iCoil1mA - iCoil2mA,
+    })
+  }
+  return points
+}
+
 export interface SimulationPoint {
   fStop: number
   shutterSpeed: number
