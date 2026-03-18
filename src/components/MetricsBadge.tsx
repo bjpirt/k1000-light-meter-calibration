@@ -2,6 +2,7 @@ import type { LinearityResult } from '../lib/types'
 
 interface Props {
   result: LinearityResult
+  errorUnit?: string
 }
 
 function qualityLabel(rSquared: number): { text: string; className: string } {
@@ -11,8 +12,9 @@ function qualityLabel(rSquared: number): { text: string; className: string } {
   return { text: 'Poor', className: 'quality-poor' }
 }
 
-export function MetricsBadge({ result }: Props) {
+export function MetricsBadge({ result, errorUnit = 'Ω' }: Props) {
   const q = qualityLabel(result.rSquared)
+  const unitSuffix = errorUnit ? ` ${errorUnit}` : ''
   return (
     <div className="metrics-badge">
       <div className="metric">
@@ -22,11 +24,11 @@ export function MetricsBadge({ result }: Props) {
       </div>
       <div className="metric">
         <span className="metric-label">RMS error</span>
-        <span className="metric-value">{result.rmsError.toFixed(1)} Ω</span>
+        <span className="metric-value">{result.rmsError.toFixed(3)}{unitSuffix}</span>
       </div>
       <div className="metric">
         <span className="metric-label">Max deviation</span>
-        <span className="metric-value">{result.maxDeviation.toFixed(1)} Ω</span>
+        <span className="metric-value">{result.maxDeviation.toFixed(3)}{unitSuffix}</span>
       </div>
       <div className="metric">
         <span className="metric-label">Linearity</span>

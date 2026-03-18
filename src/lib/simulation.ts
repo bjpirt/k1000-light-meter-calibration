@@ -27,7 +27,7 @@ export function simulateEVSeries(
   minEV = 6,
 ): EVSeriesPoint[] {
   const rAperture =
-    apertureResult.slope * Math.log(fStop) + apertureResult.intercept
+    Math.exp(apertureResult.slope * Math.log(fStop) + apertureResult.intercept)
 
   const points: EVSeriesPoint[] = []
   for (let ev = maxEV; ev >= minEV; ev--) {
@@ -42,7 +42,7 @@ export function simulateEVSeries(
 
     const rLightMeter = lmResult.slope * ev + lmResult.intercept
     const rShutter =
-      shutterResult.slope * Math.log2(shutterSpeedDenom) + shutterResult.intercept
+      Math.exp(shutterResult.slope * Math.log2(shutterSpeedDenom) + shutterResult.intercept)
     const rParallel = (rAperture * rShutter) / (rAperture + rShutter)
 
     const iCoil1mA = (voltage / rLightMeter) * 1000
@@ -117,7 +117,9 @@ export interface SimulationPoint {
 
 /**
  * Look up the resistance for a given input value, using the measured value if
- * it exists, or the linear regression prediction otherwise.
+ * it exists, or the regression prediction otherwise.
+ * For power-law fits (aperture/shutter) slope/intercept are in log(R) space,
+ * so set logFit=true to back-transform via Math.exp.
  */
 function interpolateR(
   value: number,
@@ -126,10 +128,12 @@ function interpolateR(
   slope: number,
   intercept: number,
   transform: (v: number) => number,
+  logFit = false,
 ): number {
   const idx = measuredValues.findIndex(v => Math.abs(v - value) < 1e-6)
   if (idx >= 0) return measuredR[idx]
-  return slope * transform(value) + intercept
+  const linear = slope * transform(value) + intercept
+  return logFit ? Math.exp(linear) : linear
 }
 
 /**
@@ -151,8 +155,8 @@ export function simulateCircuit(
 
   return rawFStops.map(f =>
     shutterSpeeds.map(s => {
-      const apertureR = interpolateR(f, rawFStops, apResistances, apSlope, apIntercept, Math.log)
-      const shutterR = interpolateR(s, shutterSpeeds, shResistances, shSlope, shIntercept, Math.log2)
+      const apertureR = interpolateR(f, rawFStops, apResistances, apSlope, apIntercept, Math.log, true)
+      const shutterR = interpolateR(s, shutterSpeeds, shResistances, shSlope, shIntercept, Math.log2, true)
       const parallelR = (apertureR * shutterR) / (apertureR + shutterR)
       const targetEV = Math.log2(f * f * s)
       const indicatedEV = lmSlope !== 0 ? (parallelR - lmIntercept) / lmSlope : 0

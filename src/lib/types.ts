@@ -11,15 +11,17 @@ export interface LinearityResult {
 }
 
 export interface ApertureResult extends LinearityResult {
-  xValues: number[] // log(f-stop)
+  xValues: number[]       // log(f-stop)
   rawFStops: number[]
   resistances: number[]
+  logResistances: number[] // log(R) — the y-values used in regression
 }
 
 export interface ShutterResult extends LinearityResult {
-  xValues: number[] // log2(speed)
+  xValues: number[]       // log2(speed)
   shutterSpeeds: number[]
   resistances: number[]
+  logResistances: number[] // log(R) — the y-values used in regression
 }
 
 export interface LightMeterResult extends LinearityResult {

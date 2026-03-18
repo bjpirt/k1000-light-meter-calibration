@@ -4,6 +4,7 @@ export interface Column {
   key: string
   label: string
   unit?: string
+  readOnly?: boolean
 }
 
 interface Props<T extends Record<string, number | null>> {
@@ -102,7 +103,11 @@ export function DataTable<T extends Record<string, number | null>>({
         {rows.map((row, ri) => (
           <tr key={ri}>
             <td className="row-num">{ri + 1}</td>
-            {columns.map((col, ci) => (
+            {columns.map((col, ci) => col.readOnly ? (
+              <td key={col.key} style={{ color: '#475569', background: '#f8fafc' }}>
+                {row[col.key] ?? ''}
+              </td>
+            ) : (
               <td
                 key={col.key}
                 contentEditable

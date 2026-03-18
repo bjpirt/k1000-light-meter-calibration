@@ -34,7 +34,7 @@ export function ShutterSection() {
       <h2>2. Shutter Speed Variable Resistor</h2>
       <p className="section-description">
         Enter the measured resistance at each shutter speed (denominator only — enter 60 for 1/60s).
-        The analysis uses a log₂ scale since shutter speeds form a geometric series.
+        The shutter cam produces a power-law response (R ∝ 1/s), so the analysis fits log(R) against log₂(speed).
       </p>
 
       <DataTable columns={COLUMNS} rows={rows} onChange={setRows} />
@@ -45,12 +45,13 @@ export function ShutterSection() {
 
       {result && (
         <div className="result">
-          <MetricsBadge result={result} />
+          <MetricsBadge result={result} errorUnit="log(Ω)" />
           <LinearityChart
             xValues={result.xValues}
-            yValues={result.resistances}
+            yValues={result.logResistances}
             result={result}
             xLabel="log₂(shutter speed)"
+            yLabel="log(Resistance)"
             title="Shutter Resistor"
           />
         </div>

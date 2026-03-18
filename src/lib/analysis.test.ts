@@ -105,10 +105,10 @@ describe('analyzeApertureResistor', () => {
     expect(r!.resistances).toHaveLength(2)
   })
 
-  it('achieves R² ≈ 1 for data that is perfectly linear in log(f-stop)', () => {
+  it('achieves R² ≈ 1 for data that follows a power law (R ∝ 1/f)', () => {
     const rows = [1.4, 2.0, 2.8, 4.0, 5.6].map(f => ({
       fStop: f,
-      resistance: Math.log(f) * 1000 + 500,
+      resistance: 1000 / f,  // R = 1000/f → log(R) = log(1000) − log(f)
     }))
     const r = analyzeApertureResistor(rows)
     expect(r!.rSquared).toBeCloseTo(1)
@@ -125,10 +125,10 @@ describe('analyzeApertureResistor', () => {
 // ─── analyzeShutterResistor ───────────────────────────────────────────────────
 
 describe('analyzeShutterResistor', () => {
-  // Resistance is perfectly linear in log₂(speed)
-  const shutterRows = [1, 2, 4, 8, 16, 30, 60, 125, 250, 500, 1000].map((s, i) => ({
+  // Resistance follows R ∝ 1/s (power-law), with mild noise
+  const shutterRows = [1, 2, 4, 8, 16, 30, 60, 125, 250, 500, 1000].map(s => ({
     shutterSpeed: s,
-    resistance: 200 * i + 100,
+    resistance: Math.round(10000 / s),
   }))
 
   it('returns a result for valid data', () => {
@@ -142,9 +142,9 @@ describe('analyzeShutterResistor', () => {
     expect(analyzeShutterResistor([{ shutterSpeed: 1, resistance: null }])).toBeNull()
   })
 
-  it('uses log₂ of shutter speed as x-axis', () => {
-    // Perfect log₂ relationship
-    const rows = [1, 2, 4, 8].map((s, i) => ({ shutterSpeed: s, resistance: i * 100 }))
+  it('uses log₂ of shutter speed as x-axis and achieves R² ≈ 1 for a power law', () => {
+    // R = 1000/s → log(R) = log(1000) − log₂(s)*log(2), linear in log₂(s)
+    const rows = [1, 2, 4, 8].map(s => ({ shutterSpeed: s, resistance: 1000 / s }))
     const r = analyzeShutterResistor(rows)!
     expect(r.xValues).toEqual([0, 1, 2, 3])
     expect(r.rSquared).toBeCloseTo(1)

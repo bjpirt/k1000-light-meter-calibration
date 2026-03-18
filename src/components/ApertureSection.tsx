@@ -31,8 +31,8 @@ export function ApertureSection() {
     <section className="analysis-section">
       <h2>1. Aperture Variable Resistor</h2>
       <p className="section-description">
-        Enter the measured resistance at each f-stop position. Resistance is analyzed against
-        log(f-stop) since the f-stop scale is logarithmic.
+        Enter the measured resistance at each f-stop position. The aperture cam produces a
+        power-law response (R ∝ 1/f), so the analysis fits log(R) against log(f-stop).
       </p>
 
       <DataTable columns={COLUMNS} rows={rows} onChange={setRows} />
@@ -43,12 +43,13 @@ export function ApertureSection() {
 
       {result && (
         <div className="result">
-          <MetricsBadge result={result} />
+          <MetricsBadge result={result} errorUnit="log(Ω)" />
           <LinearityChart
             xValues={result.xValues}
-            yValues={result.resistances}
+            yValues={result.logResistances}
             result={result}
             xLabel="log(f-stop)"
+            yLabel="log(Resistance)"
             title="Aperture Resistor"
           />
         </div>

@@ -17,9 +17,10 @@ interface Props {
   result: LinearityResult
   xLabel: string
   title: string
+  yLabel?: string
 }
 
-export function LinearityChart({ xValues, yValues, result, xLabel, title }: Props) {
+export function LinearityChart({ xValues, yValues, result, xLabel, title, yLabel = 'Resistance (Ω)' }: Props) {
   return (
     <div className="chart-card">
       <h4>
@@ -53,7 +54,7 @@ export function LinearityChart({ xValues, yValues, result, xLabel, title }: Prop
           plugins: { legend: { position: 'top' } },
           scales: {
             x: { type: 'linear', title: { display: true, text: xLabel } },
-            y: { title: { display: true, text: 'Resistance (Ω)' } },
+            y: { title: { display: true, text: yLabel } },
           },
         }}
       />

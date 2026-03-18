@@ -36,14 +36,8 @@ const DEFAULT_SHUTTER_ROWS: ShutterRow[] = [
   { shutterSpeed: 1000, resistance: null },
 ]
 
-const DEFAULT_LM_ROWS: LightMeterRow[] = [
-  { evLevel: 16, resistance: null }, { evLevel: 15, resistance: null },
-  { evLevel: 14, resistance: null }, { evLevel: 13, resistance: null },
-  { evLevel: 12, resistance: null }, { evLevel: 11, resistance: null },
-  { evLevel: 10, resistance: null }, { evLevel: 9, resistance: null },
-  { evLevel: 8, resistance: null },  { evLevel: 7, resistance: null },
-  { evLevel: 6, resistance: null },
-]
+const FIXED_LM_EV_LEVELS = [16, 15, 14, 13, 12, 11, 10, 9, 8, 7]
+const DEFAULT_LM_ROWS: LightMeterRow[] = FIXED_LM_EV_LEVELS.map(ev => ({ evLevel: ev, resistance: null }))
 
 function formatShutterDenom(denom: number): string {
   if (denom === 1) return '1s'
@@ -68,15 +62,15 @@ function formatResistance(r: number): string {
   return `${Math.round(r)} Ω`
 }
 
-/** Exposure error in stops: log₂(I₁/I₂). Zero = perfectly balanced. */
-function evError(iCoil1: number, iCoil2: number): number {
-  return iCoil1 > 0 && iCoil2 > 0 ? Math.log2(iCoil1 / iCoil2) : 0
-}
 
 export function CircuitSimulationSection() {
   const [apertureRows] = useLocalStorage<ApertureRow[]>('k1000:aperture', DEFAULT_APERTURE_ROWS)
   const [shutterRows] = useLocalStorage<ShutterRow[]>('k1000:shutter', DEFAULT_SHUTTER_ROWS)
-  const [lmRows] = useLocalStorage<LightMeterRow[]>('k1000:lightmeter', DEFAULT_LM_ROWS)
+  const [storedLmRows] = useLocalStorage<LightMeterRow[]>('k1000:lightmeter', DEFAULT_LM_ROWS)
+  const lmRows: LightMeterRow[] = FIXED_LM_EV_LEVELS.map((ev, i) => ({
+    evLevel: ev,
+    resistance: storedLmRows[i]?.resistance ?? null,
+  }))
 
   const apertureResult = analyzeApertureResistor(apertureRows)
   const shutterResult = analyzeShutterResistor(shutterRows)
@@ -173,16 +167,16 @@ export function CircuitSimulationSection() {
             <span style={{ background: '#fee2e2', color: '#991b1b' }}>&gt; 15% imbalance</span>
           </div>
 
-          {/* ── Exposure error chart ── */}
+          {/* ── Current difference chart ── */}
           <div className="chart-card" style={{ marginTop: '1rem' }}>
-            <h4>Exposure Error Before &amp; After Adjustment (stops)</h4>
+            <h4>Current Difference Before &amp; After Adjustment (mA)</h4>
             <Chart
               type="line"
               data={{
                 datasets: [
                   {
                     label: 'Before',
-                    data: series.map(pt => ({ x: pt.ev, y: evError(pt.iCoil1mA, pt.iCoil2mA) })),
+                    data: series.map(pt => ({ x: pt.ev, y: pt.deltaImA })),
                     borderColor: 'rgba(239, 68, 68, 0.85)',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
                     borderWidth: 2,
@@ -191,7 +185,7 @@ export function CircuitSimulationSection() {
                   },
                   {
                     label: 'After',
-                    data: adjustedSeries.map(pt => ({ x: pt.ev, y: evError(pt.iCoil1mA, pt.iCoil2mA) })),
+                    data: adjustedSeries.map(pt => ({ x: pt.ev, y: pt.deltaImA })),
                     borderColor: 'rgba(34, 197, 94, 0.85)',
                     backgroundColor: 'rgba(34, 197, 94, 0.1)',
                     borderWidth: 2,
@@ -214,7 +208,7 @@ export function CircuitSimulationSection() {
                   legend: { position: 'top' },
                   tooltip: {
                     callbacks: {
-                      label: ctx => `${ctx.dataset.label}: ${(ctx.parsed.y as number).toFixed(3)} stops`,
+                      label: ctx => `${ctx.dataset.label}: ${(ctx.parsed.y as number).toFixed(3)} mA`,
                     },
                   },
                 },
@@ -227,7 +221,7 @@ export function CircuitSimulationSection() {
                     max: 16.5,
                   },
                   y: {
-                    title: { display: true, text: 'Exposure error (stops)' },
+                    title: { display: true, text: 'ΔI (mA)' },
                   },
                 },
               }}

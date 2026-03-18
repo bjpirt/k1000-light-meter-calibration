@@ -83,9 +83,9 @@ function filterValid(
 }
 
 /**
- * Analyze aperture variable resistor linearity using log(f-stop) as the x-axis.
- * The f-stop scale is logarithmic, so this transformation produces the most
- * physically meaningful linear fit.
+ * Analyze aperture variable resistor using a log-log fit: log(R) vs log(f-stop).
+ * The aperture cam produces a power-law relationship (R halves as f doubles),
+ * so regressing log(R) against log(f) gives the correct linear model.
  */
 export function analyzeApertureResistor(rows: ApertureRow[]): ApertureResult | null {
   const rawFStops = rows.map(r => r.fStop)
@@ -95,14 +95,16 @@ export function analyzeApertureResistor(rows: ApertureRow[]): ApertureResult | n
   if (fStops.length < 2) return null
 
   const xValues = fStops.map(f => Math.log(f))
-  const result = linearRegression(xValues, resistances)
+  const logResistances = resistances.map(r => Math.log(r))
+  const result = linearRegression(xValues, logResistances)
 
-  return { ...result, xValues, rawFStops: fStops, resistances }
+  return { ...result, xValues, rawFStops: fStops, resistances, logResistances }
 }
 
 /**
- * Analyze shutter speed variable resistor linearity.
- * Uses log₂(speed) as the x-axis since shutter speeds are logarithmic.
+ * Analyze shutter speed variable resistor using a log-log fit: log(R) vs log₂(speed).
+ * The shutter cam produces a power-law relationship (R halves as speed doubles),
+ * so regressing log(R) against log₂(s) gives the correct linear model.
  */
 export function analyzeShutterResistor(rows: ShutterRow[]): ShutterResult | null {
   const rawSpeeds = rows.map(r => r.shutterSpeed)
@@ -112,13 +114,15 @@ export function analyzeShutterResistor(rows: ShutterRow[]): ShutterResult | null
   if (speeds.length < 2) return null
 
   const xValues = speeds.map(s => Math.log2(s))
-  const result = linearRegression(xValues, resistances)
+  const logResistances = resistances.map(r => Math.log(r))
+  const result = linearRegression(xValues, logResistances)
 
   return {
     ...result,
     xValues,
     shutterSpeeds: speeds,
     resistances,
+    logResistances,
   }
 }
 
