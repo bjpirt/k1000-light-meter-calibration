@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ApertureSection } from './components/ApertureSection'
 import { ShutterSection } from './components/ShutterSection'
 import { LightMeterSection } from './components/LightMeterSection'
+import { CircuitSimulationSection } from './components/CircuitSimulationSection'
 import './App.css'
 
 const STORAGE_KEYS = ['k1000:aperture', 'k1000:shutter', 'k1000:lightmeter']
@@ -34,6 +35,7 @@ export function App() {
         <ApertureSection key={`aperture-${sessionKey}`} />
         <ShutterSection key={`shutter-${sessionKey}`} />
         <LightMeterSection key={`lightmeter-${sessionKey}`} />
+        <CircuitSimulationSection key={`sim-${sessionKey}`} />
       </main>
 
       <footer className="app-footer">

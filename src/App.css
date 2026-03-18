@@ -206,3 +206,85 @@
   font-size: 0.85rem;
   color: #475569;
 }
+
+/* ─── Circuit Simulation ─────────────────────────────────────────────────── */
+
+.circuit-diagram-wrap {
+  margin-bottom: 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.sim-notice {
+  color: #64748b;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.sim-result {
+  margin-top: 0.5rem;
+}
+
+.sim-table-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.sim-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.sim-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.sim-table th,
+.sim-table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.3rem 0.6rem;
+  text-align: center;
+}
+
+.sim-table thead th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #334155;
+}
+
+.sim-table tbody th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #334155;
+  text-align: right;
+}
+
+.sim-th-corner {
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.sim-table td {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  min-width: 52px;
+}
+
+.sim-legend {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.sim-legend span {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
